@@ -55,7 +55,31 @@ public class WikiCrawler {
 	 */
 	public String crawl(boolean testing) throws IOException {
         // FILL THIS IN!
-		return null;
+		if(queue.isEmpty())
+		{
+			return null;
+		}
+		
+		String url = queue.poll();
+		
+		Elements paragraphs;
+		
+		if(testing)
+		{
+			paragraphs = wf.readWikipedia(url);
+		}
+		else
+		{
+			if(index.isIndexed(url))
+			{
+				return null;
+			}
+			paragraphs = wf.fetchWikipedia(url);
+		}
+		
+        index.indexPage(url, paragraphs);
+        queueInternalLinks(paragraphs);
+        return url;
 	}
 	
 	/**
@@ -66,6 +90,40 @@ public class WikiCrawler {
 	// NOTE: absence of access level modifier means package-level
 	void queueInternalLinks(Elements paragraphs) {
         // FILL THIS IN!
+		
+		/*for(Element p: paragraphs)
+		{
+	        Elements elts = p.select("a[href]");
+	        for (Element elt: elts) {
+	            String relURL = elt.attr("href");
+	 
+	            if (relURL.startsWith("/wiki/")) {
+	                String absURL = elt.attr("abs:href");
+	                queue.offer(absURL);
+	            }
+	        }
+		}*/
+		
+		for(Element p: paragraphs)
+		{
+	        Elements elements = p.select("a[href]");
+			for(Element e: elements)
+			{
+				/*String absHref = e.attr("abs:href");
+				System.out.println(absHref);
+				if(!( absHref.indexOf("wikipedia.org")== -1))
+            	{
+	                queue.offer(absHref);
+            	}*/
+				
+				String relURL = e.attr("href");
+				 
+	            if (relURL.startsWith("/wiki/")) {
+	                String absURL = "https://en.wikipedia.org" + relURL;
+	                queue.offer(absURL);
+	            }
+			}
+		}
 	}
 
 	public static void main(String[] args) throws IOException {
